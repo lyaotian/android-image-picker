@@ -3,7 +3,9 @@ package com.esafirm.imagepicker.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Image implements Parcelable {
+import java.io.Serializable;
+
+public class Image implements Parcelable, Serializable {
 
     private long id;
     private String name;
@@ -37,15 +39,6 @@ public class Image implements Parcelable {
 
     public void setPath(String path) {
         this.path = path;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Image image = (Image) o;
-        return image.getPath().equalsIgnoreCase(getPath());
     }
 
     /* --------------------------------------------------- */

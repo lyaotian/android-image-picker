@@ -79,6 +79,11 @@ public abstract class ImagePicker {
     /* > Builder */
     /* --------------------------------------------------- */
 
+    public ImagePicker column(int value) {
+        config.setColumn(value);
+        return this;
+    }
+
     public ImagePicker single() {
         config.setMode(ImagePicker.MODE_SINGLE);
         return this;
@@ -126,11 +131,6 @@ public abstract class ImagePicker {
 
     public ImagePicker imageDirectory(String directory) {
         config.setImageDirectory(directory);
-        return this;
-    }
-
-    public ImagePicker imageFullDirectory(String fullPath) {
-        config.setImageFullDirectory(fullPath);
         return this;
     }
 

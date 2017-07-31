@@ -5,10 +5,12 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.provider.Settings;
@@ -30,9 +32,11 @@ import com.esafirm.imagepicker.features.recyclers.OnBackAction;
 import com.esafirm.imagepicker.features.recyclers.RecyclerViewManager;
 import com.esafirm.imagepicker.helper.ConfigUtils;
 import com.esafirm.imagepicker.helper.ImagePickerPreferences;
+import com.esafirm.imagepicker.helper.ImagePickerUtils;
 import com.esafirm.imagepicker.helper.IpLogger;
 import com.esafirm.imagepicker.model.Folder;
 import com.esafirm.imagepicker.model.Image;
+import com.esafirm.imagepicker.model.ImageFactory;
 import com.esafirm.imagepicker.view.ProgressWheel;
 import com.esafirm.imagepicker.view.SnackBarView;
 
@@ -82,6 +86,23 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
         setContentView(R.layout.ef_activity_image_picker);
         setupView(config);
         setupComponents(config);
+        restoreData(savedInstanceState);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        saveData(outState);
+    }
+
+    private void saveData(Bundle outputState) {
+        presenter.onSaveData(outputState);
+        recyclerViewManager.onSaveState(outputState);
+    }
+
+    private void restoreData(Bundle inputState) {
+        presenter.onRestoreData(inputState);
+        recyclerViewManager.onRestoreState(inputState);
     }
 
     private ImagePickerConfig getConfig() {
@@ -116,8 +137,9 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
                 getResources().getConfiguration().orientation
         );
 
-        recyclerViewManager.setupAdapters((position, isSelected) -> recyclerViewManager.selectImage()
-                , bucket -> setImageAdapter(bucket.getImages()));
+        recyclerViewManager.setupAdapters(
+                (position, isSelected) -> recyclerViewManager.selectImage(isSelected),
+                (bucket) -> setImageAdapter(bucket.getImages()));
 
         recyclerViewManager.setImageSelectedListener(selectedImage -> {
             invalidateTitle();
@@ -333,6 +355,7 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_CAPTURE && resultCode == RESULT_OK) {
             presenter.finishCaptureImage(this, data, config);
+            new Handler(Looper.getMainLooper()).postDelayed(() -> recyclerView.smoothScrollToPosition(0), 500);
         }
     }
 

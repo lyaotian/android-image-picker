@@ -15,8 +15,9 @@ public class ImagePickerConfig implements Parcelable {
 
     private String folderTitle;
     private String imageTitle;
-    private ImagePickerSavePath savePath;
+    private String imageDirectory;
 
+    private int column;
     private int mode;
     private int limit;
     private int theme;
@@ -36,6 +37,14 @@ public class ImagePickerConfig implements Parcelable {
 
     public void setReturnAfterFirst(boolean returnAfterFirst) {
         this.returnAfterFirst = returnAfterFirst;
+    }
+
+    public int getColumn() {
+        return column;
+    }
+
+    public void setColumn(int value) {
+        this.column = value;
     }
 
     public int getMode() {
@@ -94,20 +103,12 @@ public class ImagePickerConfig implements Parcelable {
         this.folderMode = folderMode;
     }
 
-    public ImagePickerSavePath getImageDirectory() {
-        return savePath;
+    public String getImageDirectory() {
+        return imageDirectory;
     }
 
-    public void setSavePath(ImagePickerSavePath savePath) {
-        this.savePath = savePath;
-    }
-
-    public void setImageDirectory(String dirName) {
-        savePath = new ImagePickerSavePath(dirName, false);
-    }
-
-    public void setImageFullDirectory(String path) {
-        savePath = new ImagePickerSavePath(path, true);
+    public void setImageDirectory(String imageDirectory) {
+        this.imageDirectory = imageDirectory;
     }
 
     public void setTheme(@StyleRes int theme) {
@@ -140,7 +141,8 @@ public class ImagePickerConfig implements Parcelable {
         dest.writeTypedList(this.selectedImages);
         dest.writeString(this.folderTitle);
         dest.writeString(this.imageTitle);
-        dest.writeParcelable(this.savePath, flags);
+        dest.writeString(this.imageDirectory);
+        dest.writeInt(this.column);
         dest.writeInt(this.mode);
         dest.writeInt(this.limit);
         dest.writeInt(this.theme);
@@ -154,7 +156,8 @@ public class ImagePickerConfig implements Parcelable {
         this.selectedImages = in.createTypedArrayList(Image.CREATOR);
         this.folderTitle = in.readString();
         this.imageTitle = in.readString();
-        this.savePath = in.readParcelable(ImagePickerSavePath.class.getClassLoader());
+        this.imageDirectory = in.readString();
+        this.column = in.readInt();
         this.mode = in.readInt();
         this.limit = in.readInt();
         this.theme = in.readInt();

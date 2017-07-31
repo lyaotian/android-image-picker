@@ -3,6 +3,7 @@ package com.esafirm.imagepicker.features;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
@@ -19,6 +20,7 @@ import java.io.File;
 import java.util.List;
 
 class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
+    private static final String KEY_STATE = "state_presenter";
 
     private ImageFileLoader imageLoader;
     private CameraModule cameraModule = new DefaultCameraModule();
@@ -28,6 +30,15 @@ class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
         this.imageLoader = imageLoader;
     }
 
+    void onSaveData(Bundle outputState) {
+        outputState.putSerializable(KEY_STATE, this.cameraModule);
+    }
+
+    void onRestoreData(Bundle inputState) {
+        if (inputState != null) {
+            this.cameraModule = (CameraModule) inputState.getSerializable(KEY_STATE);
+        }
+    }
     void abortLoad() {
         imageLoader.abortLoadImages();
     }

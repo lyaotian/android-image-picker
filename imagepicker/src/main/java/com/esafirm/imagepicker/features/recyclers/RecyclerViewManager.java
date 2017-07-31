@@ -2,6 +2,7 @@ package com.esafirm.imagepicker.features.recyclers;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,6 +28,7 @@ import static com.esafirm.imagepicker.features.ImagePicker.MODE_MULTIPLE;
 import static com.esafirm.imagepicker.features.ImagePicker.MODE_SINGLE;
 
 public class RecyclerViewManager {
+    private static final String KEY_STATE = "state_recycler_view";
 
     private final Context context;
     private final RecyclerView recyclerView;
@@ -54,7 +56,14 @@ public class RecyclerViewManager {
      * Set item size, column size base on the screen orientation
      */
     public void changeOrientation(int orientation) {
-        imageColumns = orientation == Configuration.ORIENTATION_PORTRAIT ? 3 : 5;
+        int baseValue = config.getColumn();
+        int value;
+        if (baseValue > 0) {
+            value = baseValue;
+        } else {
+            value = 3;
+        }
+        imageColumns = orientation == Configuration.ORIENTATION_PORTRAIT ? value : value + 2;
         folderColumns = orientation == Configuration.ORIENTATION_PORTRAIT ? 2 : 4;
 
         boolean shouldShowFolder = config.isFolderMode() && isDisplayingFolderView();
@@ -108,12 +117,12 @@ public class RecyclerViewManager {
     }
 
     public String getTitle() {
-        if (isDisplayingFolderView()) {
+        int imageSize = imageAdapter.getSelectedImages().size();
+        if (imageSize <= 0 && isDisplayingFolderView()) {
             return config.getFolderTitle();
         }
 
         if (config.getMode() == ImagePicker.MODE_MULTIPLE) {
-            int imageSize = imageAdapter.getSelectedImages().size();
             return config.getLimit() == ImagePicker.MAX_LIMIT
                     ? String.format(context.getString(R.string.ef_selected), imageSize)
                     : String.format(context.getString(R.string.ef_selected_with_limit), imageSize, config.getLimit());
@@ -129,7 +138,11 @@ public class RecyclerViewManager {
     }
 
     public void setFolderAdapter(List<Folder> folders) {
-        folderAdapter.setData(folders);
+        if (folders == null) {
+            folderAdapter.notifyDataSetChanged();
+        }else{
+            folderAdapter.setData(folders);
+        }
         setItemDecoration(folderColumns);
         recyclerView.setAdapter(folderAdapter);
 
@@ -159,11 +172,13 @@ public class RecyclerViewManager {
         imageAdapter.setImageSelectedListener(listener);
     }
 
-    public boolean selectImage() {
+    public boolean selectImage(boolean isSelected) {
         if (config.getMode() == ImagePicker.MODE_MULTIPLE) {
-            if (imageAdapter.getSelectedImages().size() >= config.getLimit()) {
-                Toast.makeText(context, R.string.ef_msg_limit_images, Toast.LENGTH_SHORT).show();
-                return false;
+            if (isSelected) {
+                if (imageAdapter.getSelectedImages().size() >= config.getLimit()) {
+                    Toast.makeText(context, R.string.ef_msg_limit_images, Toast.LENGTH_SHORT).show();
+                    return false;
+                }
             }
         } else if (config.getMode() == ImagePicker.MODE_SINGLE) {
             if (imageAdapter.getSelectedImages().size() > 0) {
@@ -179,4 +194,20 @@ public class RecyclerViewManager {
                 && !(config.getMode() == MODE_SINGLE && config.isReturnAfterFirst());
     }
 
+    public void onSaveState(Bundle outputState) {
+        if (outputState == null) {
+            return;
+        }
+
+        outputState.putParcelableArrayList(KEY_STATE, new ArrayList<>(imageAdapter.getSelectedImages()));
+    }
+
+    public void onRestoreState(Bundle inputState) {
+        if (inputState == null) {
+            return;
+        }
+
+        ArrayList<Image> selectedList = inputState.getParcelableArrayList(KEY_STATE);
+        imageAdapter.setSelectedImages(selectedList);
+    }
 }

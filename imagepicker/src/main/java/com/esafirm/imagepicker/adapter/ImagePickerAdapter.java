@@ -17,6 +17,7 @@ import com.esafirm.imagepicker.listeners.OnImageSelectedListener;
 import com.esafirm.imagepicker.model.Image;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ImagePickerAdapter extends BaseListAdapter<ImagePickerAdapter.ImageViewHolder> {
@@ -111,7 +112,13 @@ public class ImagePickerAdapter extends BaseListAdapter<ImagePickerAdapter.Image
 
     private void removeSelectedImage(final Image image, final int position) {
         mutateSelection(() -> {
-            selectedImages.remove(image);
+            ArrayList<Image> newList = new ArrayList<>();
+            for (Image img : selectedImages) {
+                if (!img.getPath().equals(image.getPath())) {
+                    newList.add(img);
+                }
+            }
+            selectedImages = newList;
             notifyItemChanged(position);
         });
     }
@@ -140,6 +147,11 @@ public class ImagePickerAdapter extends BaseListAdapter<ImagePickerAdapter.Image
 
     public List<Image> getSelectedImages() {
         return selectedImages;
+    }
+
+    public void setSelectedImages(List<Image> list) {
+        this.selectedImages = new ArrayList<>(list);
+        notifyDataSetChanged();
     }
 
     static class ImageViewHolder extends RecyclerView.ViewHolder {

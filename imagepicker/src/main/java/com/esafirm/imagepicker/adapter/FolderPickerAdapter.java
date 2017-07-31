@@ -1,6 +1,7 @@
 package com.esafirm.imagepicker.adapter;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,15 +13,18 @@ import com.esafirm.imagepicker.features.imageloader.ImageLoader;
 import com.esafirm.imagepicker.features.imageloader.ImageType;
 import com.esafirm.imagepicker.listeners.OnFolderClickListener;
 import com.esafirm.imagepicker.model.Folder;
+import com.esafirm.imagepicker.model.Image;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class FolderPickerAdapter extends BaseListAdapter<FolderPickerAdapter.FolderViewHolder> {
 
     private final OnFolderClickListener folderClickListener;
 
-    private List<Folder> folders = new ArrayList<>();
+    private final List<Folder> folders = new ArrayList<>();
 
     public FolderPickerAdapter(Context context, ImageLoader imageLoader, OnFolderClickListener folderClickListener) {
         super(context, imageLoader);
@@ -53,10 +57,34 @@ public class FolderPickerAdapter extends BaseListAdapter<FolderPickerAdapter.Fol
     }
 
     public void setData(List<Folder> folders) {
+        this.folders.clear();
         if (folders != null) {
-            this.folders.clear();
-            this.folders.addAll(folders);
+            Collections.sort(folders, (o1, o2) -> {
+                ArrayList<Image> leftImages = o1.getImages();
+                int leftSize = leftImages != null ? leftImages.size() : 0;
+
+                ArrayList<Image> rightImages = o2.getImages();
+                int rightSize = rightImages != null ? rightImages.size() : 0;
+
+                return rightSize - leftSize;
+            });
+            //保证Camera在第一位，因为刚拍的照片放Camera
+            ArrayList<Folder> newList = new ArrayList<>();
+            Folder camera = null;
+            for (Folder f : folders) {
+                if ("Camera".equals(f.getFolderName())){
+                    camera = f;
+                } else {
+                    newList.add(f);
+                }
+            }
+            if (camera != null) {
+                newList.add(0, camera);
+            }
+
+            this.folders.addAll(newList);
         }
+
         notifyDataSetChanged();
     }
 

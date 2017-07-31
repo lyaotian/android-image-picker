@@ -24,6 +24,11 @@ public class IpLogger {
         isEnable = enable;
     }
 
+    public void v(String message) {
+        if (isEnable) {
+            Log.v(TAG, message);
+        }
+    }
     public void d(String message) {
         if (isEnable) {
             Log.d(TAG, message);
